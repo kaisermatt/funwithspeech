@@ -30,5 +30,14 @@ namespace FunWithSpeech.Services
                 return new FileInfo(destinationFileName);
             }
         }
+        public void CleanUp(long fileId)
+        {
+            var cleanUpPath = Path.Combine(_destinationPath, fileId.ToString());
+            if (Directory.Exists(cleanUpPath))
+            {
+                Directory.Delete(cleanUpPath, true);
+            }
+        }
+  
     }
 }

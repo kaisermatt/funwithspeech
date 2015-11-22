@@ -1,22 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using FunWithSpeech.Model;
 using MediaToolkit;
 using MediaToolkit.Model;
 using MediaToolkit.Options;
 
 namespace FunWithSpeech.Services
 {
-    public class ChunkerService
+    public class SegmenterService
     {
-        private readonly int _chunkMs;
+        private readonly int _segmentLengthMs;
 
-        public ChunkerService(int chunkMs)
+        public SegmenterService(int segmentLengthMs)
         {
-            _chunkMs = chunkMs;
+            _segmentLengthMs = segmentLengthMs;
         }
 
-        public IEnumerable<MediaSegment> Chunk(FileInfo file, long fileId)
+        public IEnumerable<MediaSegment> Segment(FileInfo file, long fileId)
         {
             var source = new MediaFile(file.FullName);
             using (var engine = new Engine())
@@ -26,33 +27,25 @@ namespace FunWithSpeech.Services
                 while (progressMs < source.Metadata.Duration.TotalMilliseconds)
                 {
                     var options = new ConversionOptions();
-                    var endMs = Math.Min(progressMs + _chunkMs, source.Metadata.Duration.TotalMilliseconds);
+                    var endMs = Math.Min(progressMs + _segmentLengthMs, source.Metadata.Duration.TotalMilliseconds);
                     
                     options.CutMedia(TimeSpan.FromMilliseconds(progressMs),
                         TimeSpan.FromMilliseconds(endMs));
 
                     var outputFile = Path.Combine(file.DirectoryName,
-                        string.Format("_audio{0}{1}.wav", file.Name, progressMs));
+                        string.Format("{0}_audio_{1}ms.wav", file.Name, progressMs));
 
                     engine.Convert(source, new MediaFile(outputFile), options);
                     yield return new MediaSegment
                     {
                         FileId = fileId,
-                        file = new FileInfo(outputFile),
-                        offsetMs = progressMs,
-                        durationMs = endMs - progressMs
+                        File = new FileInfo(outputFile),
+                        OffsetMs = progressMs,
+                        DurationMs = endMs - progressMs
                     };
                     progressMs = endMs;
                 }
             }
         }
-    }
-
-    public class MediaSegment
-    {
-        public long FileId { get; set; }
-        public FileInfo file { get; set; }
-        public double offsetMs { get; set; }
-        public double durationMs { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Tests
     [TestClass]
     public class DownloaderServiceTest
     {
-        private const string WorkingDirectory = "c:\\test";
+        private const string WorkingDirectory = "WorkingDirectory";
 
         [TestMethod]
         public void DoesDownload()
@@ -19,16 +19,15 @@ namespace Tests
             Assert.IsTrue(fileInfo.Exists);
         }
     
-
         [TestMethod]
         public void DoesChunk()
         {
-            var sut = new ChunkerService(DefaultController.ChunkMs);
+            var sut = new SegmenterService(DefaultController.ChunkMs);
             var file = new FileInfo(Path.Combine(WorkingDirectory, "1" ,"original.mp4"));
-            var fileInfos = sut.Chunk(file, 1);
+            var fileInfos = sut.Segment(file, 1);
             foreach (var fileInfo in fileInfos)
             {
-                Assert.IsTrue(fileInfo.file.Exists);
+                Assert.IsTrue(fileInfo.File.Exists);
             }
         }
     }

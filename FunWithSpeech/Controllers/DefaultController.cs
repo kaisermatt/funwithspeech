@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using System.Web.Http;
 using FunWithSpeech.Model;
@@ -10,7 +11,7 @@ namespace FunWithSpeech.Controllers
     public class DefaultController : ApiController
     {
         private readonly DownloaderService _downloader;
-        private readonly ChunkerService _chunker;
+        private readonly SegmenterService _segmenter;
         private readonly TranscriptionService _transcriber;
 
         //This should really be a repo
@@ -18,13 +19,14 @@ namespace FunWithSpeech.Controllers
 
         //These should be configs
         public const int ChunkMs = 10000;
-        private string path = "c:\\WorkingDirectory";
+        private string path = "c:\\FunWithSpeech";
 
         public DefaultController()
         {
+            Directory.CreateDirectory(path);
             //These should be injected.
             _downloader = new DownloaderService(path);
-            _chunker = new ChunkerService(ChunkMs);
+            _segmenter = new SegmenterService(ChunkMs);
             _transcriber =  new TranscriptionService(ConcurrentDictionary);
         }
 
@@ -50,12 +52,14 @@ namespace FunWithSpeech.Controllers
             Task.Run(() =>
             {
                 var file = _downloader.Download(value.FilePath, value.FileId);
-                var chunks = _chunker.Chunk(file, value.FileId);
+                var chunks = _segmenter.Segment(file, value.FileId);
                 
                 foreach (var chunk in chunks)
                 {
                     _transcriber.Transcribe(chunk);
                 }
+                _downloader.CleanUp(value.FileId);
+
             });
             
             return Ok();

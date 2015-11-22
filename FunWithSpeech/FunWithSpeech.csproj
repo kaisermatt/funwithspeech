@@ -83,13 +83,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Services\ChunkerService.cs" />
+    <Compile Include="Services\SegmenterService.cs" />
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Services\DownloaderService.cs" />
     <Compile Include="Model\Metadata.cs" />
     <Compile Include="Model\JobResult.cs" />
     <Compile Include="Model\JobRequest.cs" />
     <Compile Include="Model\SpeechResults.cs" />
+    <Compile Include="Model\MediaSegment.cs" />
     <Compile Include="Services\TranscriptionService.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

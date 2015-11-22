@@ -16,26 +16,28 @@ namespace FunWithSpeech.Services
 
         public void Transcribe(MediaSegment segment)
         {
-            SpeechRecognitionEngine engine = new SpeechRecognitionEngine();
-            engine.LoadGrammar(new DictationGrammar());
-            engine.SetInputToWaveFile(segment.file.FullName);
-
-            var result = engine.Recognize();
-
-            var metaDatum = new Metadata();
-            metaDatum.Start = result.Audio.AudioPosition.TotalMilliseconds + segment.offsetMs;
-            metaDatum.End = metaDatum.Start + segment.durationMs;
-            metaDatum.EngineMetadata = new SpeechResults
-            { 
-                Text = result.Text, 
-                Confidence = result.Confidence
-            };
-
-            _concurrentDictionary.AddOrUpdate(segment.FileId, new List<Metadata> {metaDatum}, (x, y) =>
+            using (var engine = new SpeechRecognitionEngine())
             {
-                y.Add(metaDatum);
-                return y;
-            });
+                engine.LoadGrammar(new DictationGrammar());
+                engine.SetInputToWaveFile(segment.File.FullName);
+
+                var result = engine.Recognize();
+
+                var metaDatum = new Metadata();
+                metaDatum.Start = result.Audio.AudioPosition.TotalMilliseconds + segment.OffsetMs;
+                metaDatum.End = metaDatum.Start + segment.DurationMs;
+                metaDatum.EngineMetadata = new SpeechResults
+                {
+                    Text = result.Text,
+                    Confidence = result.Confidence
+                };
+
+                _concurrentDictionary.AddOrUpdate(segment.FileId, new List<Metadata> {metaDatum}, (x, y) =>
+                {
+                    y.Add(metaDatum);
+                    return y;
+                });
+            }
         }
     }
 }
