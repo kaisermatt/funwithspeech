@@ -11,10 +11,10 @@ namespace FunWithSpeech.Controllers
     {
         private readonly DownloaderService _downloader;
         private readonly ChunkerService _chunker;
-        private readonly SpeechService _speaker;
+        private readonly TranscriptionService _transcriber;
 
         //This should really be a repo
-        private static readonly ConcurrentDictionary<long, List<MetaData>> ConcurrentDictionary = new ConcurrentDictionary<long, List<MetaData>>();
+        private static readonly ConcurrentDictionary<long, List<Metadata>> ConcurrentDictionary = new ConcurrentDictionary<long, List<Metadata>>();
 
         //These should be configs
         public const int ChunkMs = 10000;
@@ -25,12 +25,12 @@ namespace FunWithSpeech.Controllers
             //These should be injected.
             _downloader = new DownloaderService(path);
             _chunker = new ChunkerService(ChunkMs);
-            _speaker =  new SpeechService(ConcurrentDictionary);
+            _transcriber =  new TranscriptionService(ConcurrentDictionary);
         }
 
         public IHttpActionResult Get(long id)
         {
-            return Ok(new Output
+            return Ok(new JobResult
             {
                 FileId = id,
                 Series = ConcurrentDictionary[id]
@@ -38,22 +38,23 @@ namespace FunWithSpeech.Controllers
         }
 
         // POST: api/Default
-        public IHttpActionResult Post([FromBody]Request value)
+        public IHttpActionResult Post([FromBody]JobRequest value)
         {
             if (value == null)
             {
                 return BadRequest();
             }
-            var file = _downloader.Download(value.filePath, value.fileId);
-            var chunks = _chunker.Chunk(file, value.fileId);
 
-            ConcurrentDictionary.AddOrUpdate(value.fileId, new List<MetaData>(), (x, y) => y);
+            ConcurrentDictionary.AddOrUpdate(value.FileId, new List<Metadata>(), (x, y) => y);
 
             Task.Run(() =>
             {
+                var file = _downloader.Download(value.FilePath, value.FileId);
+                var chunks = _chunker.Chunk(file, value.FileId);
+                
                 foreach (var chunk in chunks)
                 {
-                    _speaker.Recognize(chunk);
+                    _transcriber.Transcribe(chunk);
                 }
             });
             

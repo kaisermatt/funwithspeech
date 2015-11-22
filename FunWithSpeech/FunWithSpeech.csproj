@@ -86,11 +86,11 @@
     <Compile Include="Services\ChunkerService.cs" />
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Services\DownloaderService.cs" />
-    <Compile Include="Model\MetaData.cs" />
-    <Compile Include="Model\Output.cs" />
-    <Compile Include="Model\Request.cs" />
-    <Compile Include="Model\Results.cs" />
-    <Compile Include="Services\SpeechService.cs" />
+    <Compile Include="Model\Metadata.cs" />
+    <Compile Include="Model\JobResult.cs" />
+    <Compile Include="Model\JobRequest.cs" />
+    <Compile Include="Model\SpeechResults.cs" />
+    <Compile Include="Services\TranscriptionService.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

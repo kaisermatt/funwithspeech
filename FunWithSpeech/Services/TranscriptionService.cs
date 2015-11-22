@@ -5,16 +5,16 @@ using FunWithSpeech.Model;
 
 namespace FunWithSpeech.Services
 {
-    public class SpeechService
+    public class TranscriptionService
     {
-        private readonly ConcurrentDictionary<long, List<MetaData>> _concurrentDictionary;
+        private readonly ConcurrentDictionary<long, List<Metadata>> _concurrentDictionary;
         
-        public SpeechService(ConcurrentDictionary<long, List<MetaData>> concurrentDictionary)
+        public TranscriptionService(ConcurrentDictionary<long, List<Metadata>> concurrentDictionary)
         {
             _concurrentDictionary = concurrentDictionary;
         }
 
-        public void Recognize(MediaSegment segment)
+        public void Transcribe(MediaSegment segment)
         {
             SpeechRecognitionEngine engine = new SpeechRecognitionEngine();
             engine.LoadGrammar(new DictationGrammar());
@@ -22,21 +22,16 @@ namespace FunWithSpeech.Services
 
             var result = engine.Recognize();
 
-            GetValue(result, segment);
-        }
-        
-        private void GetValue(RecognitionResult result, MediaSegment segment)
-        {
-            var metaDatum = new MetaData();
+            var metaDatum = new Metadata();
             metaDatum.Start = result.Audio.AudioPosition.TotalMilliseconds + segment.offsetMs;
             metaDatum.End = metaDatum.Start + segment.durationMs;
-            metaDatum.EngineMetadata = new Results
+            metaDatum.EngineMetadata = new SpeechResults
             { 
                 Text = result.Text, 
-               Confidence = result.Confidence
+                Confidence = result.Confidence
             };
 
-            _concurrentDictionary.AddOrUpdate(segment.FileId, new List<MetaData> {metaDatum}, (x, y) =>
+            _concurrentDictionary.AddOrUpdate(segment.FileId, new List<Metadata> {metaDatum}, (x, y) =>
             {
                 y.Add(metaDatum);
                 return y;

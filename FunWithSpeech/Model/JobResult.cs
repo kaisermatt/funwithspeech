@@ -3,10 +3,11 @@ using Newtonsoft.Json;
 
 namespace FunWithSpeech.Model
 {
-    public class Output
+    public class JobResult
     {
         [JsonProperty(PropertyName = "fileId")]
         public long FileId {get; set;}
-        public IEnumerable<MetaData> Series { get; set; }
+        [JsonProperty(PropertyName = "series")]
+        public IEnumerable<Metadata> Series { get; set; }
     }
 }
